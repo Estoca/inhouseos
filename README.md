@@ -2,13 +2,13 @@
 
 An open blueprint for giving every person in a company a personal LLM manager that reads their sources, keeps a private second brain, and writes actions and decisions into one shared tracker, so the whole company runs on the same protocol.
 
-Open Company OS is the people-and-work half of a pair. [Open Company App Harness](https://github.com/Estoca/open-company-app-harness) is the single-box cloud where internal apps run. The two compose well (the OS's shared tracker is an ordinary harness app), but each is adoptable on its own. You can run the OS on any infrastructure, and you can run the harness without the OS.
+Open Company OS is the people-and-work half of a pair. [Open Company App Harness](https://github.com/Estoca/open-company-app-harness) is the single-box company cloud where internal apps run. The OS assumes a company cloud exists: a git host with identity for every person's private repo, a place to run the shared tracker behind SSO, and an MCP endpoint that knows who is calling. The harness is the reference one and the cheapest we know; if you already have those three, the OS runs on them. The harness runs fine without the OS.
 
 ## What This Is
 
 A coding agent with connectors (chat, email, calendar, documents, meeting notes) can already read everything a person deals with in a day. What it lacks is a protocol: where to put what it finds, what counts as an action, who is allowed to see it, how to prioritize, and what it must never do on its own.
 
-Open Company OS is that protocol, plus the reference software to run it:
+None of the pieces below is new on its own. Personal LLM wikis are widespread. Company wikis of processes and policies are common. Task trackers exist. What does not exist is the union: every person required to have the second brain, their open loops flowing automatically into a shared tracker without exposing anything private, and priority coming from one versioned document that scales to the whole company. Open Company OS is that union, as a protocol plus the reference software to run it:
 
 - a **second brain** per person: a private, versioned wiki the agent maintains from raw sources (the LLM wiki pattern Andrej Karpathy described), with a fixed classification of everything that comes in;
 - a **shared tracker**: the single source of truth for open loops, commitments and decisions across the company, written by every person's agent through one API;

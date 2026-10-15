@@ -71,6 +71,6 @@ What the OS adds to a harness install is the reason the harness exists: a steady
 
 ## Adopting Separately
 
-- **OS without harness**: any git host, the tracker on any container runtime, the MCP server next to it. The protocols do not reference the harness.
-- **Harness without OS**: a company cloud for internal apps, with nothing about personal agents, trackers or rituals.
+- **Harness without OS**: a company cloud for internal apps, with nothing about personal agents, trackers or rituals. Fully independent.
+- **OS without harness**: possible, but only if you already have what the harness provides: a git host with per-person identity, a container runtime behind SSO for the tracker, and an identity-aware MCP endpoint. Most companies under a few hundred people do not, which is why the two projects were built together and why the OS install contract assumes a company cloud is in place.
 - **Both**: the tracker is the first reference app on the harness; the company brain and the compass are repos on its git host; SSO identifies the caller for the MCP server.
