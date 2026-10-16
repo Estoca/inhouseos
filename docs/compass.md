@@ -1,6 +1,6 @@
 # Protocol 3: The Compass
 
-The direction every agent in the company follows. Two parts: the **constitution** (ranking criteria, delegation ladder, signals, the never-list), which changes rarely and ships with the skills; and the **direction of the period**, a table leadership revises when strategy changes, kept in its own repo so it can change without republishing anything.
+The direction every agent in the company follows. Two parts: the **constitution** (ranking criteria, delegation ladder, signals, the never-list), which changes rarely and ships with the skills (template in [`templates/compass-constitution.md`](../templates/compass-constitution.md)); and the **direction of the period**, a table leadership revises when strategy changes, kept in its own repo so it can change without republishing anything (template in [`templates/direction.md`](../templates/direction.md)).
 
 Every skill that ranks work reads both before ranking. The tracker mirrors project weights from here; it is not a source.
 
@@ -22,9 +22,9 @@ By kind of action. The level says how far the agent goes alone. It only rises by
 
 | Level | The agent | Examples |
 |---|---|---|
-| 0 | observes and proposes | point out a pattern (no 1:1 in weeks, a recurring meeting with no decision), suggest closing a dead loop |
+| 0 | observes and proposes | point out a pattern (no 1:1 in weeks, a recurring meeting with no decision), propose a slot for a 1:1, suggest closing a dead loop |
 | 1 | drafts, the person sends | a chase in a thread, a follow-up email, a request for a decision |
-| 2 | executes with confirmation | create an issue, open or close an action in the tracker, schedule a 1:1 |
+| 2 | executes with confirmation | create an issue, open or close an action in the tracker, record an absence |
 | 3 | executes and reports | write the daily note and the log, back up the repo |
 
 ## 3. Direction of the Period
@@ -34,7 +34,7 @@ A versioned file in its own repository. Template in [`templates/direction.md`](.
 | Weight | Project or theme | Slug in the tracker | Owner | Why now |
 |---|---|---|---|---|
 
-Weight **3** = what the company needs to happen this period; **2** = important, not urgent; **1** = maintenance. A project not in the table has weight 1.
+Weight **3** = what the company needs to happen this period; **2** = important, not urgent; **1** = maintenance. A project not in the table has weight 1, with one exception: work the direction file lists under "Outside the direction, on purpose" is not ranked by criterion 3 at all (the other criteria still apply). See below.
 
 Rules for writing it: pull before editing, bump `version`, add a line to `## History`, commit, push. Never force-push. Never delete a history line. Only leadership (and whoever they name, typically a chief of staff) writes it, by hand or through the `/compass` skill.
 
@@ -42,7 +42,7 @@ If the agent cannot read the direction (no access, no network) it says so and pr
 
 ### Work outside the direction
 
-Not everything a company does belongs in the table, and that can be on purpose. Exploratory work owned by a founder or an innovation role can stay outside the direction so it does not compete with execution for the same ranking. Such work is not weight 1 by default; it is simply not ranked by the compass. If it matures into an area commitment, it enters the table, and that is a success signal. State this explicitly in the direction file, or agents will treat it as neglect.
+Not everything a company does belongs in the table, and that can be on purpose. Exploratory work owned by a founder or an innovation role can stay outside the direction so it does not compete with execution for the same ranking. Listed there, it is not weight 1 and it is not neglected: criterion 3 is skipped for it and the other criteria still rank its items. If it matures into an area commitment, it enters the table, and that is a success signal. Work that is in neither place is weight 1.
 
 ## 4. Management Signals
 
@@ -61,7 +61,7 @@ What the agent observes and points out (level 0), with the threshold that turns 
 
 For every agent, at every delegation level. Mirrored in the agent platform's managed settings where possible.
 
-- Send a message, an email or an invite without delegation for that kind of action.
+- Send a message, an email or an invite. The agent drafts; the person sends. The one exception is the person asking for that message, at that moment, and it is never offered by the agent.
 - Act in someone else's name.
 - Delete data or pages.
 - Share `sensitive` content.

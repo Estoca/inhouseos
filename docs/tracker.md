@@ -55,7 +55,7 @@ The daily package does not only list; it offers to do. Each offer is recorded as
 OL-0042 | chat:#approvals | waiting:@someone | asked:2026-09-10 | bump:2026-09-15 | sev:2 | PR 331, review of the billing endpoint | [[threads/2026-09-10-pr-331]]
 ```
 
-`OL-NNNN` is the tracker id with leading zeros, never a local numbering. `tracker/decisions.md` is a table with the same id rule (`D-NNNN`). `tracker/closed.md` is append-only, with the evidence that closed each item.
+`OL-NNNN` is the tracker id with leading zeros, never a local numbering. `waiting:@someone` is the person's chat handle, for reading; the tracker itself stores their email, and the sync script maps one to the other from the tracker's people list. The agent never types an email into a view or a handle into the tracker. `tracker/decisions.md` is a table with the same id rule (`D-NNNN`). `tracker/closed.md` is append-only, with the evidence that closed each item.
 
 Views change only by regeneration: the agent asks the tracker for a one-time snapshot link, downloads it, and runs the sync script. A check mode compares view and tracker without writing. Divergence is fixed **in the tracker**, never by editing the view. A manually edited view invented fields, dropped items and swapped owners ([pitfalls.md](pitfalls.md)).
 

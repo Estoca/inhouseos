@@ -60,7 +60,7 @@ sequenceDiagram
 | Sources → second brain | `raw/` is never edited. A wrong source gets a correction in the wiki with `supersedes:`, the original stays. |
 | Second brain → tracker | Only actions and decisions cross. Sensitive items cross with a neutral title; detail stays private. |
 | Second brain → company brain | Only by explicit promotion. Decisions need the consent of whoever decided. `sensitive` never crosses. |
-| Agent → the world | Nothing is sent. Drafts only, unless the person asks for that message, at that moment. |
+| Agent → the world | Nothing is sent on the agent's initiative. Drafts only; the one exception is the person asking for that message, at that moment. |
 | Agent → tracker | Every write under the person's identity. Close and decide name the item they target (`expect_title_contains`), so a wrong id is an error, not a silent wrong close. |
 
 ## Running on the Harness

@@ -8,7 +8,7 @@ Open Company OS is the people-and-work half of a pair. [Open Company App Harness
 
 A coding agent with connectors (chat, email, calendar, documents, meeting notes) can already read everything a person deals with in a day. What it lacks is a protocol: where to put what it finds, what counts as an action, who is allowed to see it, how to prioritize, and what it must never do on its own.
 
-None of the pieces below is new on its own. Personal LLM wikis are widespread. Company wikis of processes and policies are common. Task trackers exist. What does not exist is the union: every person required to have the second brain, their open loops flowing automatically into a shared tracker without exposing anything private, and priority coming from one versioned document that scales to the whole company. Open Company OS is that union, as a protocol plus the reference software to run it:
+None of the pieces below is new on its own. Personal LLM wikis are widespread. Company wikis of processes and policies are common. Task trackers exist. What we have not found anywhere is the union: every person required to have the second brain, their open loops flowing automatically into a shared tracker without exposing anything private, and priority coming from one versioned document that scales to the whole company. Open Company OS is that union, as a protocol plus the reference software to run it:
 
 - a **second brain** per person: a private, versioned wiki the agent maintains from raw sources (the LLM wiki pattern Andrej Karpathy described), with a fixed classification of everything that comes in;
 - a **shared tracker**: the single source of truth for open loops, commitments and decisions across the company, written by every person's agent through one API;
@@ -16,7 +16,7 @@ None of the pieces below is new on its own. Personal LLM wikis are widespread. C
 - a **compass**: a versioned file that states the company's priorities for the period and the rules every agent follows to rank work and to act (what it drafts, what it executes, what it never does);
 - **rituals**: a morning package and an evening close for each person, a weekly close, and a meeting prep/ingest flow, each a skill the agent runs when asked.
 
-It is not a hosted product. It is a set of protocols, schemas, templates and a reference implementation (agent skills, a tracker service, an MCP server) that a company adapts to its own tools.
+It is not a hosted product. It is a set of protocols, schemas, templates and a reference implementation (agent skills, a tracker service, an MCP server) that a company adapts to its own tools. The reference implementation runs on Claude Code (skills packaged as a plugin, connectors and the tracker reached through MCP). The protocols do not depend on it: any agent that can read the person's sources, run a skill-like procedure and call an API can follow them.
 
 ## Why It Exists
 
@@ -27,7 +27,7 @@ The protocol moves that boundary. Every agent writes actions to the same tracker
 Two rules make this safe enough for a whole company:
 
 - **Private by default, shared by protocol.** Raw sources and the wiki are the person's. Only actions, decisions and what is explicitly promoted leave that boundary, and sensitive content never does.
-- **The agent drafts; the person sends.** The agent never sends a message, an email or an invite, never acts in someone else's name, never deletes. Delegation levels are published in the compass and only change there.
+- **The agent drafts; the person sends.** The agent never sends a message, an email or an invite on its own, never acts in someone else's name, never deletes. The only exception is the person asking for that one message, at that moment. Delegation levels are published in the compass and only change there.
 
 ## Architecture
 
@@ -82,7 +82,7 @@ A person sends this repository URL to a terminal-connected LLM.
 The LLM reads the repo, explains the protocol, asks which connectors and tracker to use, creates the person's second brain from the template, writes the schema file, runs the first sweep, and leaves a morning package ready for tomorrow.
 ```
 
-The company side (tracker, company brain, compass) is set up once by whoever runs the rollout. The person side is set up by each person with their own agent, without help. The pilot showed that "without help" is where it breaks, so the install contract is written to be followed by an LLM, not a human. See [docs/agent-setup-contract.md](docs/agent-setup-contract.md) (planned).
+The company side (tracker, company brain, compass) is set up once by whoever runs the rollout. The person side is set up by each person with their own agent, without help. The pilot showed that "without help" is where it breaks, so the install contract is written to be followed by an LLM, not a human. The contract itself, `docs/agent-setup-contract.md`, is roadmap item 2 and not written yet.
 
 ## Results So Far
 
@@ -95,6 +95,8 @@ Built and used at Estoca, a logistics company in Brazil, before being generalize
 | 2026-10-08, 09 | Company-wide rollout over two days |
 | 2026-10-09 | 56 of 73 active people opened the package on day two |
 | 2026-10-08 to 14 | 94% of expected daily packages opened (214 of 228) |
+
+How "expected" is counted: a person enters the count on the first day they open a package and stays in it on every working day after that, minus recorded absences. Most people's first day was 08 or 09-10, so the week has fewer expected packages than 73 people times five days.
 
 What this does not show yet: whether loops close faster or decisions get unstuck sooner. Those are the outcome metrics (time to close, bumps per action, decisions past deadline) and they are the next thing we will publish.
 
@@ -112,7 +114,7 @@ docs/compass.md          protocol 3: direction and rules
 docs/privacy.md          protocol 4: privacy, sensitive content, promotion
 docs/rituals.md          morning package, evening close, weekly close, meetings
 docs/pitfalls.md         incidents that produced rules
-templates/               compass direction file, second-brain schema (skeleton)
+templates/               compass constitution, direction file, second-brain schema
 ROADMAP.md               what is extracted next
 ```
 
