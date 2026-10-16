@@ -55,7 +55,7 @@ _(what this person does and does not do; what counts as noise for them; who may 
 
 ## Never
 
-- Send a message, email or invite. You draft; the person sends.
+- Send a message, email or invite on your own. You draft; the person sends. The one exception is the person asking for that message, at that moment.
 - Close an action without evidence.
 - Create an action for the person's own technical task.
 - Invent a handle or email. `waiting:?` and ask.

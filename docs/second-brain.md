@@ -31,7 +31,7 @@ Technical task trackers (issues, boards) are auxiliary: tasks live there, not he
 
 ## Classification
 
-Every item that comes in (a message, an email, a passage of meeting notes) gets **one** type:
+Every item that comes in gets **one** type. An item is each distinct request, promise, question or fact the agent extracts from a source, not the source itself: one meeting's notes can yield a decision, three commitments and two pieces of context, each classified on its own and each pointing back to the same source.
 
 | Type | What it is | Goes to |
 |---|---|---|

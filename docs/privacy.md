@@ -4,7 +4,9 @@ Three circles: the person's, the tracker's, the company's. Content moves outward
 
 ## The Person's Circle
 
-`raw/` and `wiki/` are private to the person. Every page carries `visibility: private` in its frontmatter. Nobody else's agent reads them. The company does not back them up to a place others can read; the person's repo is theirs even when hosted on the company's git server (private repo, person as sole owner).
+`raw/` and `wiki/` are private to the person. Every page carries `visibility: private` in its frontmatter. Nobody else's agent reads them, and no colleague can open the repo: it is a private repository with the person as its only owner.
+
+**Private from colleagues, a policy towards the operator.** Whoever operates the git host can read any repository on it: a site administrator account, anyone with a shell on the server, anyone holding a backup of its disk, and the service account that writes the backups. No git host setting removes that. What the company does instead: it publishes who those operators are and keeps them few; it keeps the host's audit log on; it encrypts the server disk and the backups; and it commits, as policy, to never open a person's repo without that person asking. Client-side encryption of `wiki/` and `raw/` is possible and would make the host blind by construction, at the cost of cloud sessions and of recovery by anyone but the person; it is not part of the protocol today. None of this hides content from the LLM provider the agent runs on, which reads everything the agent reads.
 
 ## Sensitive
 
@@ -25,14 +27,18 @@ Rules of promotion:
 - **Decisions need consent.** A decision is promoted with the date and who decided, and only after whoever decided agrees it goes in. The person running the promotion asks; the agent drafts the question.
 - **`sensitive` never crosses**, whatever the reason.
 - **Facts only with a source**, and this counts double here: the company brain is read by every agent in the company. An inference written as fact there spreads to everyone's package the next morning.
-- **The promoted item links back** to nothing private. Sources become permalinks to shared threads or documents, or are dropped.
+- **The promoted item links back** to nothing private. Sources become permalinks to shared threads or documents. A fact whose only source is private is promoted with its source described, not linked ("decided in the 1:1 of 2026-09-12, confirmed by both"), and the person who promotes it vouches for it; a fact with no describable source is not promoted.
 - **Owner, not opinion.** A page about a process says who owns it and what it is, not what anyone thinks of it.
 
-Who can write the company brain is a team on the git host (writers), separate from who can read it (everyone). Automation adds new hires to readers; writers are added by hand.
+Who can write the company brain is a team on the git host (writers), separate from who can read it (everyone). Automation adds new hires to readers; writers are added by hand. A person who is not a writer promotes the same way: their agent prepares the page and opens a pull request (or hands the draft to a writer named in the compass), and a writer merges it. The `/project` kickoff is a promotion like any other: the project's owner is the one giving consent, and the page is created under their name.
 
 ## Agent Memory
 
 The agent's own persistent memory (what it learns about how the person works) is part of the person's circle and follows the same rules. It never holds secrets: credentials live in a local, ignored `.env` the person writes alone.
+
+## Retention and Removal
+
+`raw/` is immutable for the agent, not for the law or for the person. A source that must be removed (a legal request, a message its author withdrew, personal content that should never have been captured) is deleted by the person from `raw/` and from the git history of their own repo; the agent then lists every wiki page, tracker note and promoted item that cited it, so the person can decide what else goes. Actions in the tracker that came from the removed source keep their title and status: they are the company's record of a request, not a copy of the source. The company states a retention period for `raw/` in its compass (none, by default: the person keeps what they keep).
 
 ## What the Person Can Always Do
 

@@ -10,7 +10,7 @@ Three roles, and the protocol is mostly about keeping them apart.
 | The agent | reads sources, classifies, writes the second brain, writes the tracker, drafts messages, ranks the day | send anything, decide anything, act for someone else, delete |
 | Leadership | writes the compass (direction, weights, delegation levels) | configure each person's agent |
 
-"The agent is the maintainer. The person captures, asks and decides. Everything else is the agent's." Nothing runs unattended: every operation is triggered by the person. Git is backup only, with no automation on it.
+"The agent is the maintainer. The person captures, asks and decides. Everything else is the agent's." Nothing the person's agent does runs unattended: every operation is triggered by the person, and every write to the tracker is confirmed by them inside the ritual (one confirmation per item, or per batch when the agent lists the batch first). Git is backup only, with no automation on the person's repo. Company-side administration (adding a new hire to the readers of the company brain, provisioning a repo) is ordinary automation and is not covered by this rule.
 
 ## Pieces
 

@@ -38,11 +38,11 @@ Weight **3** = what the company needs to happen this period; **2** = important, 
 
 Rules for writing it: pull before editing, bump `version`, add a line to `## History`, commit, push. Never force-push. Never delete a history line. Only leadership (and whoever they name, typically a chief of staff) writes it, by hand or through the `/compass` skill.
 
-If the agent cannot read the direction (no access, no network) it says so and proceeds with weight 1 for every project.
+If the agent cannot read the direction (no access, no network) it says so and proceeds with weight 1 for every project. If it can read it but `period_end` has passed, it uses the table as is, says in one line that the direction is expired, and offers the maintainer the `/compass` skill to renew it; an expired direction is still better than none.
 
 ### Work outside the direction
 
-Not everything a company does belongs in the table, and that can be on purpose. Exploratory work owned by a founder or an innovation role can stay outside the direction so it does not compete with execution for the same ranking. Listed there, it is not weight 1 and it is not neglected: criterion 3 is skipped for it and the other criteria still rank its items. If it matures into an area commitment, it enters the table, and that is a success signal. Work that is in neither place is weight 1.
+Not everything a company does belongs in the table, and that can be on purpose. Exploratory work owned by a founder or an innovation role can stay outside the direction so it does not compete with execution for the same ranking. Listed there, it is not weight 1 and it is not neglected: criterion 3 is skipped for it, which in practice means its items are ranked as if they had weight 2 (above maintenance, below the period's commitments), and the other criteria still apply. If it matures into an area commitment, it enters the table, and that is a success signal. Work that is in neither place is weight 1.
 
 ## 4. Management Signals
 
@@ -53,7 +53,7 @@ What the agent observes and points out (level 0), with the threshold that turns 
 | Manager without a 1:1 with a report | 21 days | points it out in the manager's morning package and proposes a slot |
 | Recurring meeting with no recorded decision | 3 editions in a row | proposes an agenda with the pending decision made explicit |
 | Item without reply | past SLA | chase ready; from the third bump, proposes taking it out of chat |
-| Company process not followed | 1 occurrence | records a deviation event in the tracker and tells the person |
+| Company process not followed | 1 occurrence | tells the person and proposes recording a deviation event in the tracker (the record itself is level 2: it happens only with their ok) |
 | Open loop | 30 days | proposes closing as stale or escalating |
 | Meeting the person organizes without a pre-read | 2 working days before | drafts the brief as pre-read and the message to circulate it; the person sends |
 
@@ -63,7 +63,7 @@ For every agent, at every delegation level. Mirrored in the agent platform's man
 
 - Send a message, an email or an invite. The agent drafts; the person sends. The one exception is the person asking for that message, at that moment, and it is never offered by the agent.
 - Act in someone else's name.
-- Delete data or pages.
+- Delete data or pages. (The person may delete their own repo; the agent never does it for them.)
 - Share `sensitive` content.
 - Write a secret to a versioned file, or ask for one in chat.
 - Call a service outside the official connectors.

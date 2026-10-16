@@ -8,7 +8,7 @@ Open Company OS is the people-and-work half of a pair. [Open Company App Harness
 
 A coding agent with connectors (chat, email, calendar, documents, meeting notes) can already read everything a person deals with in a day. What it lacks is a protocol: where to put what it finds, what counts as an action, who is allowed to see it, how to prioritize, and what it must never do on its own.
 
-None of the pieces below is new on its own. Personal LLM wikis are widespread. Company wikis of processes and policies are common. Task trackers exist. What we have not found anywhere is the union: every person required to have the second brain, their open loops flowing automatically into a shared tracker without exposing anything private, and priority coming from one versioned document that scales to the whole company. Open Company OS is that union, as a protocol plus the reference software to run it:
+None of the pieces below is new on its own. Personal LLM wikis are widespread. Company wikis of processes and policies are common. Task trackers exist. What we have not found anywhere is the union: every person required to have the second brain, their open loops flowing into a shared tracker, each one confirmed by the person inside the ritual, without exposing anything private, and priority coming from one versioned document that scales to the whole company. Open Company OS is that union, written down as a protocol. The reference software that runs it (agent skills, a tracker service, an MCP server) exists internally and is being extracted into this repository piece by piece; today the repository is the paper. The pieces:
 
 - a **second brain** per person: a private, versioned wiki the agent maintains from raw sources (the LLM wiki pattern Andrej Karpathy described), with a fixed classification of everything that comes in;
 - a **shared tracker**: the single source of truth for open loops, commitments and decisions across the company, written by every person's agent through one API;
@@ -97,6 +97,8 @@ Built and used at Estoca, a logistics company in Brazil, before being generalize
 | 2026-10-08 to 14 | 94% of expected daily packages opened (214 of 228) |
 
 How "expected" is counted: a person enters the count on the first day they open a package and stays in it on every working day after that, minus recorded absences. Most people's first day was 08 or 09-10, so the week has fewer expected packages than 73 people times five days.
+
+What the rollout cost: two days in which the company's regular meetings were cancelled so that everyone could set up with their own agent, with two people (one founder and the agent itself) on call for help; most of the help went to Windows machines and to people who had never opened a terminal. Per-person running cost is the agent subscription plus the tokens of two rituals a day; we have not measured the tokens yet and will publish them with the outcome metrics.
 
 What this does not show yet: whether loops close faster or decisions get unstuck sooner. Those are the outcome metrics (time to close, bumps per action, decisions past deadline) and they are the next thing we will publish.
 
