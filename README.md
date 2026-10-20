@@ -2,7 +2,7 @@
 
 An open blueprint for giving every person in a company a personal LLM manager that reads their sources, keeps a private second brain, and writes actions and decisions into one shared tracker, so the whole company runs on the same protocol.
 
-Open Company OS is the people-and-work half of a pair. [Open Company App Harness](https://github.com/Estoca/open-company-app-harness) is the single-box company cloud where internal apps run. The OS assumes a company cloud exists: a git host with identity for every person's private repo, a place to run the shared tracker behind SSO, and an MCP endpoint that knows who is calling. The harness is the reference one and the cheapest we know; if you already have those three, the OS runs on them. The harness runs fine without the OS.
+Open Company OS is the people-and-work half of a pair. [Open Company Cloud](https://github.com/Estoca/open-company-cloud) is the single-box company cloud where internal apps run. The OS assumes a company cloud exists: a git host with identity for every person's private repo, a place to run the shared tracker behind SSO, and an MCP endpoint that knows who is calling. Open Company Cloud is the reference one and the cheapest we know; if you already have those three, the OS runs on them. The cloud runs fine without the OS. It is ready to try: a coding agent installs it on a clean box from a layperson's request in about 8 minutes and puts a new app on the air in about 2 ([test records](https://github.com/Estoca/open-company-cloud/blob/main/docs/first-run.md), [try it in 10 minutes](https://github.com/Estoca/open-company-cloud/blob/main/docs/try-it.md)).
 
 ## What This Is
 
@@ -64,7 +64,7 @@ Layers, from private to shared:
 | Compass | leadership, by hand or skill | Priority criteria, delegation levels, direction of the period, signals, never-list | [compass.md](docs/compass.md) |
 | Skills | this repo | Step by step for each ritual | [rituals.md](docs/rituals.md) |
 
-The full picture, including how the OS runs on the harness, is in [architecture.md](docs/architecture.md). What has already made an agent go wrong, and the rule each incident produced, is in [pitfalls.md](docs/pitfalls.md).
+The full picture, including how the OS runs on Open Company Cloud, is in [architecture.md](docs/architecture.md). What has already made an agent go wrong, and the rule each incident produced, is in [pitfalls.md](docs/pitfalls.md).
 
 ## The Four Protocols
 
@@ -75,7 +75,7 @@ The full picture, including how the OS runs on the harness, is in [architecture.
 
 ## Target Agent Experience
 
-The intended install experience mirrors the harness:
+The intended install experience mirrors Open Company Cloud:
 
 ```text
 A person sends this repository URL to a terminal-connected LLM.
@@ -109,7 +109,7 @@ This repository starts as the paper: the protocols and the architecture, general
 ## Repository Layout
 
 ```text
-docs/architecture.md     how the pieces fit, and how the OS runs on the harness
+docs/architecture.md     how the pieces fit, and how the OS runs on Open Company Cloud
 docs/second-brain.md     protocol 1: the per-person wiki
 docs/tracker.md          protocol 2: the shared tracker
 docs/compass.md          protocol 3: direction and rules

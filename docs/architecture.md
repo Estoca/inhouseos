@@ -63,14 +63,14 @@ sequenceDiagram
 | Agent → the world | Nothing is sent on the agent's initiative. Drafts only; the one exception is the person asking for that message, at that moment. |
 | Agent → tracker | Every write under the person's identity. Close and decide name the item they target (`expect_title_contains`), so a wrong id is an error, not a silent wrong close. |
 
-## Running on the Harness
+## Running on Open Company Cloud
 
-The OS does not need the [Open Company App Harness](https://github.com/Estoca/open-company-app-harness). It needs: a git host for second brains and the company brain, a place to run the tracker service, and a way for agents to reach it. The harness provides all three on one box (Gitea, Docker Compose, SSO in front of the tracker), and the tracker ships with the harness's app manifest so it deploys like any other internal app. If you already have GitHub, a container platform and SSO, use those.
+The OS does not need [Open Company Cloud](https://github.com/Estoca/open-company-cloud). It needs: a git host for second brains and the company brain, a place to run the tracker service, and a way for agents to reach it. The cloud provides all three on one box (Gitea, Docker Compose, SSO in front of the tracker), and the tracker ships with the cloud's app manifest so it deploys like any other internal app. If you already have GitHub, a container platform and SSO, use those.
 
-What the OS adds to a harness install is the reason the harness exists: a steady stream of small internal apps, requested by agents on behalf of people, each one with an owner and a contract.
+What the OS adds to a cloud install is the reason the cloud exists: a steady stream of small internal apps, requested by agents on behalf of people, each one with an owner and a contract.
 
 ## Adopting Separately
 
-- **Harness without OS**: a company cloud for internal apps, with nothing about personal agents, trackers or rituals. Fully independent.
-- **OS without harness**: possible, but only if you already have what the harness provides: a git host with per-person identity, a container runtime behind SSO for the tracker, and an identity-aware MCP endpoint. Most companies under a few hundred people do not, which is why the two projects were built together and why the OS install contract assumes a company cloud is in place.
-- **Both**: the tracker is the first reference app on the harness; the company brain and the compass are repos on its git host; SSO identifies the caller for the MCP server.
+- **Cloud without OS**: a company cloud for internal apps, with nothing about personal agents, trackers or rituals. Fully independent.
+- **OS without the cloud**: possible, but only if you already have what the cloud provides: a git host with per-person identity, a container runtime behind SSO for the tracker, and an identity-aware MCP endpoint. Most companies under a few hundred people do not, which is why the two projects were built together and why the OS install contract assumes a company cloud is in place.
+- **Both**: the tracker is the first reference app on the cloud; the company brain and the compass are repos on its git host; SSO identifies the caller for the MCP server.
