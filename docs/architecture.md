@@ -63,9 +63,9 @@ sequenceDiagram
 | Agent → the world | Nothing is sent on the agent's initiative. Drafts only; the one exception is the person asking for that message, at that moment. |
 | Agent → tracker | Every write under the person's identity. Close and decide name the item they target (`expect_title_contains`), so a wrong id is an error, not a silent wrong close. |
 
-## Running on Open Company Cloud
+## Running on InHouseCloud
 
-The OS does not need [Open Company Cloud](https://github.com/Estoca/open-company-cloud). It needs: a git host for second brains and the company brain, a place to run the tracker service, and a way for agents to reach it. The cloud provides all three on one box (Gitea, Docker Compose, SSO in front of the tracker), and the tracker ships with the cloud's app manifest so it deploys like any other internal app. If you already have GitHub, a container platform and SSO, use those.
+The OS does not need [InHouseCloud](https://github.com/Estoca/inhousecloud). It needs: a git host for second brains and the company brain, a place to run the tracker service, and a way for agents to reach it. The cloud provides all three on one box (Gitea, Docker Compose, SSO in front of the tracker), and the tracker ships with the cloud's app manifest so it deploys like any other internal app. If you already have GitHub, a container platform and SSO, use those.
 
 What the OS adds to a cloud install is the reason the cloud exists: a steady stream of small internal apps, requested by agents on behalf of people, each one with an owner and a contract.
 
