@@ -10,4 +10,6 @@ What exists today is the paper. The order below is the order in which the intern
 6. **MCP server.** The tools the agent uses to read and write the tracker and the company brain, with the caller identified by their login.
 7. **Outcome metrics.** Time to close, bumps per action, decisions past deadline, before and after rollout.
 
+Done along the way: the project was renamed from Open Company OS to InHouseOS on 2026-10-27 (prefix `iho`), pairing with InHouseCloud (`ihc`). The repository moves to `Estoca/inhouseos`; the old URL redirects.
+
 Not planned: anything company-specific (KPI catalogs, CRM integrations, BI connectors). Those stay in each company's fork.

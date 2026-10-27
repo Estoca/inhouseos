@@ -1,14 +1,14 @@
-# Open Company OS
+# InHouseOS
 
 An open blueprint for giving every person in a company a personal LLM manager that reads their sources, keeps a private second brain, and writes actions and decisions into one shared tracker, so the whole company runs on the same protocol.
 
-Open Company OS is the people-and-work half of a pair. [InHouseCloud](https://github.com/Estoca/inhousecloud) is the single-box company cloud where internal apps run. The OS assumes a company cloud exists: a git host with identity for every person's private repo, a place to run the shared tracker behind SSO, and an MCP endpoint that knows who is calling. InHouseCloud is the reference one and the cheapest we know; if you already have those three, the OS runs on them. The cloud runs fine without the OS. It is ready to try: a coding agent installs it on a clean box from a layperson's request in about 8 minutes and puts a new app on the air in about 2 ([test records](https://github.com/Estoca/inhousecloud/blob/main/docs/first-run.md), [try it in 10 minutes](https://github.com/Estoca/inhousecloud/blob/main/docs/try-it.md)).
+InHouseOS is the people-and-work half of a pair. [InHouseCloud](https://github.com/Estoca/inhousecloud) is the single-box company cloud where internal apps run. The OS assumes a company cloud exists: a git host with identity for every person's private repo, a place to run the shared tracker behind SSO, and an MCP endpoint that knows who is calling. InHouseCloud is the reference one and the cheapest we know; if you already have those three, the OS runs on them. The cloud runs fine without the OS. It is ready to try: a coding agent installs it on a clean box from a layperson's request in about 8 minutes and puts a new app on the air in about 2 ([test records](https://github.com/Estoca/inhousecloud/blob/main/docs/first-run.md), [try it in 10 minutes](https://github.com/Estoca/inhousecloud/blob/main/docs/try-it.md)).
 
 ## What This Is
 
 A coding agent with connectors (chat, email, calendar, documents, meeting notes) can already read everything a person deals with in a day. What it lacks is a protocol: where to put what it finds, what counts as an action, who is allowed to see it, how to prioritize, and what it must never do on its own.
 
-None of the pieces below is new on its own. Personal LLM wikis are widespread. Company wikis of processes and policies are common. Task trackers exist. What we have not found anywhere is the union: every person required to have the second brain, their open loops flowing into a shared tracker, each one confirmed by the person inside the ritual, without exposing anything private, and priority coming from one versioned document that scales to the whole company. Open Company OS is that union, written down as a protocol. The reference software that runs it (agent skills, a tracker service, an MCP server) exists internally and is being extracted into this repository piece by piece; today the repository is the paper. The pieces:
+None of the pieces below is new on its own. Personal LLM wikis are widespread. Company wikis of processes and policies are common. Task trackers exist. What we have not found anywhere is the union: every person required to have the second brain, their open loops flowing into a shared tracker, each one confirmed by the person inside the ritual, without exposing anything private, and priority coming from one versioned document that scales to the whole company. InHouseOS is that union, written down as a protocol. The reference software that runs it (agent skills, a tracker service, an MCP server) exists internally and is being extracted into this repository piece by piece; today the repository is the paper. The pieces:
 
 - a **second brain** per person: a private, versioned wiki the agent maintains from raw sources (the LLM wiki pattern Andrej Karpathy described), with a fixed classification of everything that comes in;
 - a **shared tracker**: the single source of truth for open loops, commitments and decisions across the company, written by every person's agent through one API;
@@ -119,6 +119,10 @@ docs/pitfalls.md         incidents that produced rules
 templates/               compass constitution, direction file, second-brain schema
 ROADMAP.md               what is extracted next
 ```
+
+## Name
+
+InHouseOS, formerly Open Company OS. Renamed on 2026-10-27, after a brand search found the "Open Company" family already used by live brands and AI projects; the sibling cloud went through the same search and was renamed to InHouseCloud on 2026-10-21. "Open" stays as a qualifier (InHouseOS, open source), not as part of the name. The short prefix is `iho`, for commands and variables once there is code to name.
 
 ## License
 
