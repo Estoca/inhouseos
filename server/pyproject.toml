@@ -29,7 +29,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-iho = ["brain_template/**/*", "brain_template/**/.gitkeep"]
+iho = ["brain_template/**/*", "brain_template/**/.gitkeep", "skills/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

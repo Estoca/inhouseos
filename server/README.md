@@ -2,7 +2,7 @@
 
 The InHouseOS server: tracker, brains, compass, skills and the MCP endpoint in one process, with everything it keeps in one volume (`/data`). One instance per company.
 
-Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker, standalone login and snapshots (LAB-50 to LAB-54). Agent install (LAB-55) comes next.
+Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker, standalone login, snapshots (LAB-50 to LAB-54) and skills served over MCP (LAB-56). Agent install (LAB-55) comes next.
 
 ## Brains
 
@@ -19,6 +19,18 @@ Each person's second brain is a bare git repository at `/data/repos/people/<emai
 Writes are built in a throwaway index and published with `git update-ref <branch> <new> <old>`: if another write got in first, nothing is written and the answer lists what changed. Same contracts as estoca-brain-sync 0.4.0.
 
 Measured on a synthetic brain the size of a real one (215 files, 2.3 MB), in the container: upload of 200 files 0.18 s, `brain_list` 14 ms, a search over the whole brain 81 ms, 49 MB RAM.
+
+## Skills
+
+The rituals are served by the server itself, so the agent needs no plugin: `os_list_skills` lists them (name, what it does, when to use it) and `os_get_skill(name)` returns the step by step plus the support docs it references. The MCP `instructions` field tells the agent to fetch the skill before acting when the person says a trigger ("bom dia", "abrir pacote", "fechar pacote", `/sweep`...). Lookup takes the name, an alias or the slash command (`/abrir-pacote`, "abrir pacote").
+
+| Skill | Aliases | Does |
+|---|---|---|
+| `bomdia` | `abrir-pacote` | the morning package: agenda, the queue, offers, what arrived, chases, decisions, meetings to prepare and ingest |
+| `fechar-pacote` | `boanoite` | the evening close: bumps sent, closes with evidence, outcomes of the day's suggestions, what is due tomorrow |
+| `sweep` | `varredura` | all sources since the last sweep, classified, with proposed actions and pages |
+
+They are package data under `src/iho/skills/`: `<name>/SKILL.md` with a small frontmatter (`name`, `description`, `when`, `aliases`, `docs`), and shared support docs at the root (`tracker.md`, `compass.md`, `brain.md`, `armadilhas.md`). They read the brain with the `brain_*` tools, the tracker with `tracker_*`, and chat, email and calendar through each person's own connectors. Company values are `{{placeholders}}` filled from `IHO_COMPANY_*`, never written in the text. The skills are in Portuguese for now.
 
 ## Try it
 
@@ -45,6 +57,10 @@ All from `IHO_*` variables (or `server/.env`).
 | `IHO_OIDC_CLIENT_ID`, `IHO_OIDC_CLIENT_SECRET` | | the OAuth client you create at the provider, with redirect URI `<IHO_PUBLIC_URL>/oauth/callback` |
 | `IHO_ALLOWED_DOMAINS` | | who signs in: verified e-mails of these domains (with Google, the Workspace domain must match too) |
 | `IHO_ALLOWED_EMAILS` | | invited people from other domains |
+| `IHO_COMPANY_NAME` | | the company name the skills and the MCP instructions use |
+| `IHO_COMPANY_DOMAIN` | first of `IHO_ALLOWED_DOMAINS` | the company's e-mail domain |
+| `IHO_COMPANY_CONNECTORS` | `Slack,Gmail,Google Calendar,Google Drive` | connectors each person is expected to have on their agent; the skills check them, they do not install them |
+| `IHO_COMPANY_MEETING_NOTES` | | the official source of meeting notes, e.g. `Gemini notes in Google Drive` |
 | `IHO_BACKUP_DIR` | unset (off) | scheduled snapshots go here (in the image: `/backups`) |
 | `IHO_BACKUP_EVERY_HOURS`, `IHO_BACKUP_KEEP` | `24`, `7` | how often, and how many to keep |
 | `IHO_OAUTH_REDIRECT_HOSTS` | `claude.ai,claude.com,localhost,127.0.0.1` | agents allowed to register and receive login codes |

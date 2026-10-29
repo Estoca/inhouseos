@@ -12,7 +12,7 @@ from mcp.server.auth.provider import TokenVerifier
 from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions, RevocationOptions
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
-from mcp.types import ContentBlock, Tool as MCPTool
+from mcp.types import ContentBlock, Tool as MCPTool, ToolAnnotations
 from pydantic import AnyHttpUrl, Field
 from starlette.applications import Starlette
 from starlette.datastructures import UploadFile
@@ -29,6 +29,7 @@ from iho.errors import IhoError
 from iho.gitstore import GitStore
 from iho.links import LinkStore
 from iho.oauth import CALLBACK_PATH, OAuthProvider
+from iho.skillbook import SkillBook
 from iho.tracker.service import Tracker
 
 logger = logging.getLogger("iho.audit")
@@ -40,6 +41,14 @@ INSTRUCTIONS = (
     "Without the brain folder on disk, read with brain_list, brain_read and brain_search, and write "
     "with brain_append and brain_edit; with a shell and curl, use brain_download_link and brain_upload_link."
 )
+
+
+def server_instructions(settings: Settings, skills: SkillBook) -> str:
+    head = INSTRUCTIONS
+    if settings.company_name.strip():
+        head = head.replace("InHouseOS:", f"InHouseOS of {settings.company_name.strip()}:", 1)
+    return f"{head} {skills.instructions()}"
+
 
 HOME_HTML = (
     '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>InHouseOS</title></head>'
@@ -95,6 +104,7 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
     public_url = AnyHttpUrl(settings.normalized_public_url)
     brains = Brains(settings, GitStore(settings.repos_dir), LinkStore(settings.db_path))
     tracker = Tracker(settings.db_path)
+    skills = SkillBook(settings)
     backups = BackupScheduler(settings)
     backups.start()
 
@@ -108,7 +118,7 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
 
     mcp = IhoMCP(
         name="InHouseOS",
-        instructions=INSTRUCTIONS,
+        instructions=server_instructions(settings, skills),
         token_verifier=verifier,
         auth_server_provider=provider,
         auth=AuthSettings(
@@ -137,6 +147,20 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
             "version": __version__,
             "auth_mode": settings.auth_mode.value,
         }
+
+    # ------------------------------------------------------------ skills
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
+    def os_list_skills() -> dict:
+        """The skills (rituals) this server serves: name, what it does and when to use it. Then os_get_skill."""
+        return skills.list()
+
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
+    def os_get_skill(
+        name: Annotated[str, Field(min_length=1, description="Skill name or alias, e.g. bomdia or /abrir-pacote")],
+    ) -> dict:
+        """The step by step of a skill and the support docs it references. Call it before running a ritual
+        (bom dia, abrir pacote, fechar pacote, sweep...) and follow the text; read the docs it returns."""
+        return _tool(lambda: skills.get(name))
 
     # ------------------------------------------------------------ second brain
     @mcp.tool()
