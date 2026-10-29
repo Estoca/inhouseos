@@ -22,6 +22,7 @@ from starlette.routing import Route
 
 from iho import __version__
 from iho.actor import Actor, build_verifier, current_actor
+from iho.backup import BackupScheduler
 from iho.brains import Brains, clean_path
 from iho.config import AuthMode, Settings
 from iho.errors import IhoError
@@ -94,6 +95,8 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
     public_url = AnyHttpUrl(settings.normalized_public_url)
     brains = Brains(settings, GitStore(settings.repos_dir), LinkStore(settings.db_path))
     tracker = Tracker(settings.db_path)
+    backups = BackupScheduler(settings)
+    backups.start()
 
     # standalone: this server is the OAuth server (the SDK serves its routes); dev: one fixed token
     provider = None
@@ -288,6 +291,7 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
             "service": "iho-server",
             "version": __version__,
             "commit_sha": os.environ.get("GIT_COMMIT_SHA", "unknown"),
+            "backup": backups.last if backups.enabled else "off",
         })
 
     async def home(_: Request) -> HTMLResponse:

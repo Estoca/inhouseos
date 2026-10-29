@@ -2,7 +2,7 @@
 
 The InHouseOS server: tracker, brains, compass, skills and the MCP endpoint in one process, with everything it keeps in one volume (`/data`). One instance per company.
 
-Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker and standalone login (LAB-50 to LAB-53). Backup (LAB-54) and agent install (LAB-55) come next.
+Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker, standalone login and snapshots (LAB-50 to LAB-54). Agent install (LAB-55) comes next.
 
 ## Brains
 
@@ -45,6 +45,8 @@ All from `IHO_*` variables (or `server/.env`).
 | `IHO_OIDC_CLIENT_ID`, `IHO_OIDC_CLIENT_SECRET` | | the OAuth client you create at the provider, with redirect URI `<IHO_PUBLIC_URL>/oauth/callback` |
 | `IHO_ALLOWED_DOMAINS` | | who signs in: verified e-mails of these domains (with Google, the Workspace domain must match too) |
 | `IHO_ALLOWED_EMAILS` | | invited people from other domains |
+| `IHO_BACKUP_DIR` | unset (off) | scheduled snapshots go here (in the image: `/backups`) |
+| `IHO_BACKUP_EVERY_HOURS`, `IHO_BACKUP_KEEP` | `24`, `7` | how often, and how many to keep |
 | `IHO_OAUTH_REDIRECT_HOSTS` | `claude.ai,claude.com,localhost,127.0.0.1` | agents allowed to register and receive login codes |
 | `IHO_DEV_TOKEN` | | dev mode only: the one accepted bearer token, 24+ characters |
 | `IHO_DEV_USER` | | dev mode only: the email that token stands for |
@@ -56,6 +58,17 @@ Dev mode has one token and one person. Publish it on localhost only, as `compose
 The shared tracker of actions, decisions, projects and suggestions, from estoca-project-tracker 0.16.2, runs inside the same process on the same SQLite file (`/data/iho.db`). Its 28 `tracker_*` tools keep their names and contracts and are served from its own catalog (`iho.tracker.tools`). Left out: its web screens and REST routes (they trusted proxy headers that nothing validates here) and `tracker_snapshot_link` (only the old local views used it).
 
 Until `setup-os` fills the org chart, nobody has leadership or C-level roles: each person sees their own items, and `IHO_TRACKER_ADMIN_EMAILS` sees everything. Tables are created on start; schema changes after the first release will need SQLite migrations.
+
+## Snapshots, export and import
+
+A snapshot is one `.tar.gz` with the whole instance: `iho.db` copied with SQLite's online backup API (consistent while the server runs), one git bundle per brain with every ref, and a manifest. It is both the backup and the way to move an instance (hosted to your own machine, or back).
+
+```bash
+docker exec iho iho export /backups/move.tar.gz      # while running
+docker run --rm -v <new data volume>:/data -v <backups>:/backups iho-server iho import /backups/move.tar.gz
+```
+
+Import goes into a stopped instance; it refuses a data dir that already has data unless `--force`, which moves the current data aside instead of deleting it. With `IHO_BACKUP_DIR` set, the server writes a snapshot on start and every `IHO_BACKUP_EVERY_HOURS`, keeps the newest `IHO_BACKUP_KEEP`, and reports the last one in `/health` (`backup.ok`, or the error). `iho backup-now` takes one on demand. Copying snapshots off the machine is your tool's job (rclone, restic, a NAS sync): the folder is the boundary, so the server holds no cloud credentials. A host folder mounted on `/backups` must be writable by uid 10001.
 
 ## Standalone login
 
