@@ -31,6 +31,24 @@ class Settings(BaseSettings):
     dev_token: str = ""
     dev_user: str = ""
 
+    # brains: limits ported from estoca-brain-sync 0.4.0
+    link_ttl_seconds: int = 300
+    max_files_per_upload: int = 200
+    max_upload_bytes: int = 50_000_000
+    max_file_bytes: int = 1_000_000
+    max_files_per_push: int = 100
+    max_files_per_pull: int = 200
+    max_bytes_per_pull: int = 4_000_000
+    pull_hint_bytes: int = 100_000
+    snapshot_cache_repos: int = 32
+    max_list_entries: int = 2000
+    read_default_lines: int = 400
+    max_read_bytes: int = 60_000
+    search_default_results: int = 30
+    max_search_results: int = 200
+    max_search_context: int = 5
+    max_line_chars: int = 300
+
     @model_validator(mode="after")
     def _check_auth(self) -> Settings:
         if self.auth_mode is AuthMode.DEV:
