@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     access_token_seconds: int = 3600
     refresh_token_days: int = 30
 
+    # scheduled snapshots (iho.backup); unset = off. Copying them off the machine is the operator's tool.
+    backup_dir: Path | None = None
+    backup_every_hours: float = 24
+    backup_keep: int = 7
+
     # brains: limits ported from estoca-brain-sync 0.4.0
     link_ttl_seconds: int = 300
     max_files_per_upload: int = 200

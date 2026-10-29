@@ -22,13 +22,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 iho \
-    && mkdir /data && chown iho:iho /data
+    && mkdir /data /backups && chown iho:iho /data /backups
 
 COPY --from=builder /install /usr/local
 
 USER iho
 WORKDIR /home/iho
-VOLUME /data
+# /backups: where IHO_BACKUP_DIR=/backups writes snapshots; a host folder mounted here must be writable by uid 10001
+VOLUME /data /backups
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

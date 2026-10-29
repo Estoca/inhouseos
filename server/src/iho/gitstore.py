@@ -59,6 +59,13 @@ class GitStore:
     def exists(self, name: str) -> bool:
         return (self.path(name) / "HEAD").is_file()
 
+    def names(self) -> list[str]:
+        """Every repo under the root, by name (people/ana@example.com)."""
+        if not self.root.is_dir():
+            return []
+        return sorted(str(p.relative_to(self.root))[: -len(".git")]
+                      for p in self.root.rglob("*.git") if (p / "HEAD").is_file())
+
     def create(self, name: str) -> None:
         p = self.path(name)
         p.parent.mkdir(parents=True, exist_ok=True)
