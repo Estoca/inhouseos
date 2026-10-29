@@ -2,7 +2,7 @@
 
 The InHouseOS server: tracker, brains, compass, skills and the MCP endpoint in one process, with everything it keeps in one volume (`/data`). One instance per company.
 
-Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools and the tracker (LAB-50 to LAB-52). Real login (LAB-53), backup (LAB-54) and agent install (LAB-55) come next.
+Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker and standalone login (LAB-50 to LAB-53). Backup (LAB-54) and agent install (LAB-55) come next.
 
 ## Brains
 
@@ -39,7 +39,13 @@ All from `IHO_*` variables (or `server/.env`).
 |---|---|---|
 | `IHO_DATA_DIR` | `/data` | `iho.db` and `repos/` live here |
 | `IHO_PUBLIC_URL` | `http://localhost:8080` | the URL agents connect to |
-| `IHO_AUTH_MODE` | `dev` | `dev` today; `standalone` (own OAuth with Google/Microsoft login) and `iht` (behind inhouse.technology) are planned |
+| `IHO_AUTH_MODE` | `dev` | `dev` (one fixed token) or `standalone` (own OAuth, people sign in with Google or another OpenID provider); `iht` (behind inhouse.technology) is planned |
+| `IHO_OIDC_PROVIDER` | `google` | `google`, or `oidc` for any OpenID provider with discovery (e.g. a Microsoft tenant) |
+| `IHO_OIDC_ISSUER` | `https://accounts.google.com` | for Microsoft, the tenant issuer `https://login.microsoftonline.com/<tenant id>/v2.0` |
+| `IHO_OIDC_CLIENT_ID`, `IHO_OIDC_CLIENT_SECRET` | | the OAuth client you create at the provider, with redirect URI `<IHO_PUBLIC_URL>/oauth/callback` |
+| `IHO_ALLOWED_DOMAINS` | | who signs in: verified e-mails of these domains (with Google, the Workspace domain must match too) |
+| `IHO_ALLOWED_EMAILS` | | invited people from other domains |
+| `IHO_OAUTH_REDIRECT_HOSTS` | `claude.ai,claude.com,localhost,127.0.0.1` | agents allowed to register and receive login codes |
 | `IHO_DEV_TOKEN` | | dev mode only: the one accepted bearer token, 24+ characters |
 | `IHO_DEV_USER` | | dev mode only: the email that token stands for |
 
@@ -50,6 +56,12 @@ Dev mode has one token and one person. Publish it on localhost only, as `compose
 The shared tracker of actions, decisions, projects and suggestions, from estoca-project-tracker 0.16.2, runs inside the same process on the same SQLite file (`/data/iho.db`). Its 28 `tracker_*` tools keep their names and contracts and are served from its own catalog (`iho.tracker.tools`). Left out: its web screens and REST routes (they trusted proxy headers that nothing validates here) and `tracker_snapshot_link` (only the old local views used it).
 
 Until `setup-os` fills the org chart, nobody has leadership or C-level roles: each person sees their own items, and `IHO_TRACKER_ADMIN_EMAILS` sees everything. Tables are created on start; schema changes after the first release will need SQLite migrations.
+
+## Standalone login
+
+The server is the OAuth server agents connect to: the MCP SDK serves `/register` (dynamic client registration, which claude.ai needs), `/authorize`, `/token`, `/revoke` and the metadata, and `iho.oauth` stores clients, codes and tokens in `/data/iho.db` (only hashes of tokens). `/authorize` sends the person to the sign-in provider; `/oauth/callback` admits a verified e-mail from an allowed domain or an invited one and hands the agent a code whose subject is that e-mail. Access tokens last an hour, refresh tokens 30 days; a refresh rotates both, and revoking either drops the whole login.
+
+Registration is open, but only redirects to the hosts in `IHO_OAUTH_REDIRECT_HOSTS` are accepted, so another site cannot register itself and collect sign-ins. Not done yet: cutting access when someone leaves the company (today it ends when the refresh token expires); revocation through the SDK needs an empty `client_secret` field even from public clients.
 
 ## Auth, in one place
 
