@@ -36,7 +36,7 @@ flowchart LR
   subgraph Person["Each person"]
     Sources[Connectors<br/>chat · email · calendar · docs · meeting notes]
     Agent[LLM agent<br/>skills from this repo]
-    Brain[(Second brain<br/>raw/ · wiki/ · tracker views<br/>private git repo)]
+    Brain[(Second brain<br/>raw/ · wiki/<br/>private git repo)]
   end
 
   subgraph Company["Shared"]
@@ -50,7 +50,7 @@ flowchart LR
   Agent -->|API or MCP| Tracker
   Agent -->|promote, with consent| CBrain
   Compass --> Agent
-  Tracker -.views regenerated.-> Brain
+  Brain -.links items by id.-> Tracker
 ```
 
 Layers, from private to shared:
@@ -59,7 +59,7 @@ Layers, from private to shared:
 |---|---|---|---|
 | Raw sources | the agent, from connectors | Immutable dumps of threads, emails, meeting notes | [second-brain.md](docs/second-brain.md) |
 | Second brain (wiki) | the agent | People, projects, meetings, topics, daily and weekly notes. Private. | [second-brain.md](docs/second-brain.md) |
-| Shared tracker | every agent, by protocol | Actions and decisions of everyone. Views regenerated into each repo. | [tracker.md](docs/tracker.md) |
+| Shared tracker | every agent, by protocol | Actions and decisions of everyone. The only copy: brains link to items by id. | [tracker.md](docs/tracker.md) |
 | Company brain | the agent, only via promotion | Processes, projects, decisions taken, owners. Company-wide. | [privacy.md](docs/privacy.md) |
 | Compass | leadership, by hand or skill | Priority criteria, delegation levels, direction of the period, signals, never-list | [compass.md](docs/compass.md) |
 | Skills | this repo | Step by step for each ritual | [rituals.md](docs/rituals.md) |
@@ -69,7 +69,7 @@ The full picture, including how the OS runs on InHouseCloud, is in [architecture
 ## The Four Protocols
 
 1. **[Second brain](docs/second-brain.md)**: layers, sources, the six-way classification of every incoming item, writing conventions (facts only with a source, corrections keep the old text).
-2. **[Shared tracker](docs/tracker.md)**: fields, rules (one person, one deliverable, evidence to close, SLA by severity, reassign never recreate), how views are regenerated and how the agent behaves without the tracker.
+2. **[Shared tracker](docs/tracker.md)**: fields, rules (one person, one deliverable, evidence to close, SLA by severity, reassign never recreate), how items are cited and how the agent behaves without the tracker.
 3. **[Compass](docs/compass.md)**: the ranking criteria, the delegation ladder, the direction of the period as a versioned table, management signals, and the never-list.
 4. **[Privacy and promotion](docs/privacy.md)**: what stays private, what is `sensitive`, how an item is promoted to the company brain, and the consent rule for decisions.
 

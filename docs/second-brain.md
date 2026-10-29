@@ -8,8 +8,9 @@ One private git repository per person. The agent maintains it; the person reads 
 |---|---|---|---|
 | `raw/<source>/` | the agent, from connectors | Dumps of threads, emails, meeting notes, documents | **No.** Never edited. |
 | `wiki/` | the agent | People, projects, meetings, threads, topics, daily and weekly notes | Yes, by rules below |
-| `tracker/` | regenerated from the shared tracker | `open.md`, `decisions.md`, `closed.md` | Only by regeneration |
 | schema file | co-evolves with the person | Rules and conventions of this repo, personal rules, what the agent must never do for this person | Yes, with care |
+
+No copy of the shared tracker lives here. Actions and decisions exist only in the tracker ([tracker.md](tracker.md)); the wiki links to them by id. When the tracker is unreachable, approved operations wait in a `## Para o tracker` ("for the tracker"; the skills write in Portuguese) section of the day's note until the next session replays them.
 
 The schema file is the contract. It states the sources, the layers, the classification, personal rules ("I do not review pull requests unless X asks", "invoices are finance's, not mine, unless overdue") and the never-list. The behaviour rules of the agent (priority criteria, delegation ladder) are **not** copied there; they come from the compass and the skills. Template in [`templates/second-brain-schema.md`](../templates/second-brain-schema.md).
 

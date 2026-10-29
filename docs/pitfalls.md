@@ -16,7 +16,7 @@ Rule: **facts only with a source.** Before writing a statement of fact, ask wher
 
 ## A tracker view written by hand
 
-The agent wrote the open-actions view by hand: invented a field, lost the bump and the link, left out an item that existed in the tracker and, when "regenerating", replaced a correct owner in the view with a wrong one from the tracker. Views change only by the sync script. Divergence is fixed in the tracker.
+The agent wrote the open-actions view by hand: invented a field, lost the bump and the link, left out an item that existed in the tracker and, when "regenerating", replaced a correct owner in the view with a wrong one from the tracker. First rule: views change only by a sync script, and divergence is fixed in the tracker. Later the views were removed altogether: the tracker is the only source, read through its tools, and an item is cited by id, link and title. A copy that can drift will drift.
 
 ## A partial delivery noted only in the wiki
 
