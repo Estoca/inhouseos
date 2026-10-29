@@ -2,7 +2,23 @@
 
 The InHouseOS server: tracker, brains, compass, skills and the MCP endpoint in one process, with everything it keeps in one volume (`/data`). One instance per company.
 
-Status: skeleton (LAB-50). It answers `/health` and serves `/mcp` with one tool, `iho_whoami`. Brains in git (LAB-51), the tracker (LAB-52), real login (LAB-53), backup (LAB-54) and agent install (LAB-55) come next.
+Status: `/health`, `/mcp` with `iho_whoami` and the second-brain tools (LAB-50, LAB-51). The tracker (LAB-52), real login (LAB-53), backup (LAB-54) and agent install (LAB-55) come next.
+
+## Brains
+
+Each person's second brain is a bare git repository at `/data/repos/people/<email>.git`. The repo comes from the caller's identity, never from a tool argument, so nobody reaches someone else's brain. No Gitea: the server drives `git` plumbing directly, and anyone can `git clone` a brain out of the volume.
+
+| Tool | Does |
+|---|---|
+| `brain_status`, `brain_bootstrap` | state of your brain; create it from the template (`src/iho/brain_template`, whose `CLAUDE.md` is `templates/second-brain-schema.md`) |
+| `brain_upload_link`, `brain_download_link` | single-use links for backup and restore with `curl`, without file content passing through the conversation |
+| `brain_list`, `brain_read`, `brain_search` | `ls`, line reads and `grep` on the server, for chat and Cowork where there is no folder |
+| `brain_append`, `brain_edit` | write a piece of a file without the model rewriting it |
+| `brain_pull`, `brain_push` | whole files through the conversation, for small files |
+
+Writes are built in a throwaway index and published with `git update-ref <branch> <new> <old>`: if another write got in first, nothing is written and the answer lists what changed. Same contracts as estoca-brain-sync 0.4.0.
+
+Measured on a synthetic brain the size of a real one (215 files, 2.3 MB), in the container: upload of 200 files 0.18 s, `brain_list` 14 ms, a search over the whole brain 81 ms, 49 MB RAM.
 
 ## Try it
 

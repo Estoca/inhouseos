@@ -9,6 +9,7 @@ dependencies = [
   "mcp==1.28.1",
   "uvicorn[standard]>=0.30",
   "pydantic-settings>=2.3",
+  "python-multipart>=0.0.9",
 ]
 
 [project.optional-dependencies]
@@ -20,6 +21,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+iho = ["brain_template/**/*", "brain_template/**/.gitkeep"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
