@@ -1,0 +1,16 @@
+# Local try-out. Dev auth: one fixed token for one person, published on localhost only.
+# Put IHO_DEV_TOKEN (24+ random characters) and IHO_DEV_USER (your email) in server/.env.
+services:
+  iho:
+    build: .
+    env_file: .env
+    environment:
+      IHO_AUTH_MODE: dev
+      IHO_PUBLIC_URL: http://localhost:8080
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - iho-data:/data
+
+volumes:
+  iho-data:
