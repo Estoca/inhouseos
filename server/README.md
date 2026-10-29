@@ -2,7 +2,7 @@
 
 The InHouseOS server: tracker, brains, compass, skills and the MCP endpoint in one process, with everything it keeps in one volume (`/data`). One instance per company.
 
-Status: `/health`, `/mcp` with `iho_whoami` and the second-brain tools (LAB-50, LAB-51). The tracker (LAB-52), real login (LAB-53), backup (LAB-54) and agent install (LAB-55) come next.
+Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools and the tracker (LAB-50 to LAB-52). Real login (LAB-53), backup (LAB-54) and agent install (LAB-55) come next.
 
 ## Brains
 
@@ -44,6 +44,12 @@ All from `IHO_*` variables (or `server/.env`).
 | `IHO_DEV_USER` | | dev mode only: the email that token stands for |
 
 Dev mode has one token and one person. Publish it on localhost only, as `compose.yaml` does.
+
+## Tracker
+
+The shared tracker of actions, decisions, projects and suggestions, from estoca-project-tracker 0.16.2, runs inside the same process on the same SQLite file (`/data/iho.db`). Its 28 `tracker_*` tools keep their names and contracts and are served from its own catalog (`iho.tracker.tools`). Left out: its web screens and REST routes (they trusted proxy headers that nothing validates here) and `tracker_snapshot_link` (only the old local views used it).
+
+Until `setup-os` fills the org chart, nobody has leadership or C-level roles: each person sees their own items, and `IHO_TRACKER_ADMIN_EMAILS` sees everything. Tables are created on start; schema changes after the first release will need SQLite migrations.
 
 ## Auth, in one place
 
