@@ -3,12 +3,16 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import Sequence
 from typing import Annotated, Any, Callable
+
+import anyio
 
 from mcp.server.auth.provider import TokenVerifier
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
+from mcp.types import ContentBlock, Tool as MCPTool
 from pydantic import AnyHttpUrl, Field
 from starlette.applications import Starlette
 from starlette.datastructures import UploadFile
@@ -23,6 +27,7 @@ from iho.config import Settings
 from iho.errors import IhoError
 from iho.gitstore import GitStore
 from iho.links import LinkStore
+from iho.tracker.service import Tracker
 
 logger = logging.getLogger("iho.audit")
 
@@ -56,12 +61,39 @@ def _tool(fn: Callable[[], dict[str, Any]]) -> dict[str, Any]:
         raise ToolError(f"{exc.code}: {exc.message}") from exc
 
 
+class IhoMCP(FastMCP):
+    """FastMCP plus tools that arrive with a ready JSON schema (the tracker's catalog).
+
+    Native tools come from @tool; catalog tools are listed with their own schema and dispatched to a
+    handler that takes the arguments dict. The handler runs in a thread: the tracker is sync SQLAlchemy.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        self._catalog: dict[str, tuple[MCPTool, Callable[[dict[str, Any]], dict[str, Any]]]] = {}
+        super().__init__(*args, **kwargs)
+
+    def add_catalog_tool(self, spec: dict[str, Any], handler: Callable[[dict[str, Any]], dict[str, Any]]) -> None:
+        tool = MCPTool(name=spec["name"], description=spec["description"], inputSchema=spec["inputSchema"],
+                       annotations=spec.get("annotations"))
+        self._catalog[tool.name] = (tool, handler)
+
+    async def list_tools(self) -> list[MCPTool]:
+        return [*await super().list_tools(), *(t for t, _ in self._catalog.values())]
+
+    async def call_tool(self, name: str, arguments: dict[str, Any]) -> Sequence[ContentBlock] | dict[str, Any]:
+        if name not in self._catalog:
+            return await super().call_tool(name, arguments)
+        handler = self._catalog[name][1]
+        return await anyio.to_thread.run_sync(lambda: _tool(lambda: handler(arguments or {})))
+
+
 def create_application(settings: Settings, *, token_verifier: TokenVerifier | None = None) -> Starlette:
     prepare_data_dir(settings)
     public_url = AnyHttpUrl(settings.normalized_public_url)
     brains = Brains(settings, GitStore(settings.repos_dir), LinkStore(settings.db_path))
+    tracker = Tracker(settings.db_path)
 
-    mcp = FastMCP(
+    mcp = IhoMCP(
         name="InHouseOS",
         instructions=INSTRUCTIONS,
         token_verifier=token_verifier or build_verifier(settings),
@@ -195,6 +227,10 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
         brain_upload_link. Files equal to the repo are skipped. With base_head, nothing is written if the
         repo moved."""
         return _tool(lambda: brains.push(current_actor(), message, files, base_head))
+
+    # ------------------------------------------------------------ tracker (catalog of estoca-project-tracker)
+    for spec in tracker.catalog():
+        mcp.add_catalog_tool(spec, lambda args, name=spec["name"]: tracker.run(name, args, current_actor()))
 
     app = mcp.streamable_http_app()
 
