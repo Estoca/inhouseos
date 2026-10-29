@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     access_token_seconds: int = 3600
     refresh_token_days: int = 30
 
+    # company values the skills are filled with (iho.skillbook): never written in the skill text
+    company_name: str = ""
+    company_domain: str = ""  # empty: the first of allowed_domains
+    company_connectors: str = "Slack,Gmail,Google Calendar,Google Drive"  # what each person connects on their agent
+    company_meeting_notes: str = ""  # official source of meeting notes, e.g. "Gemini notes in Google Drive"
+
     # scheduled snapshots (iho.backup); unset = off. Copying them off the machine is the operator's tool.
     backup_dir: Path | None = None
     backup_every_hours: float = 24
