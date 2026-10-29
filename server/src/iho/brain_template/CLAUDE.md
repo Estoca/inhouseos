@@ -25,7 +25,7 @@ Official source of meeting notes: <the one the company guarantees for everyone>.
 | Layer | Directory | Who writes | What |
 |---|---|---|---|
 | Raw sources | `raw/<source>/` | you, from connectors | Immutable dumps |
-| Tracker | <tracker URL> via MCP; views in `tracker/` | you, by protocol | Everyone's actions and decisions. Shared. |
+| Tracker | <tracker URL> via MCP; no local copy | you, by protocol | Everyone's actions and decisions. Shared, and the only source: read and write it through the tracker tools, never a file in this repo. |
 | Wiki | `wiki/` | you | People, projects, meetings, threads, topics, daily and weekly notes. Private. |
 | Company brain | <repo> | you, only via `/promote` | Processes, projects, decisions taken, owners. |
 | Schema | this file | co-evolves | Rules of this repo |
