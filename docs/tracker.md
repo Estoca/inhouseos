@@ -1,6 +1,6 @@
 # Protocol 2: The Shared Tracker
 
-The tracker is the **source** of every person's actions and decisions. The `tracker/` files in each second brain are **views** generated from it. The agent never writes those views by hand. Every skill that opens, chases, closes or decides follows this protocol; without it, a person's action stays locked in their own repo and no one else's agent can see it.
+The tracker is the **source** of every person's actions and decisions, and the only one: second brains keep no copy of it, and the agent reads and writes it through the tracker's tools. Every skill that opens, chases, closes or decides follows this protocol; without it, a person's action stays locked in their own repo and no one else's agent can see it.
 
 ## Why Shared
 
@@ -29,8 +29,8 @@ Identity: the tracker identifies people by email. The caller of the API is ident
 - **SLA counts from registration.** Without a deadline, an action is overdue by its severity's SLA from the latest of last bump or `registered_on`. An old request registered today does not arrive overdue; its age still counts from `asked_at`. Never adjust `asked_at` to dodge the SLA.
 - **Waiting on an outsider is not overdue.** When a supplier, customer or platform is what blocks, `waiting_on` stays the internal owner and `waiting_external` names who outside is expected. Set `review_at`. The item leaves the SLA and does not generate chases. Never record a fake bump to reset the clock; mark `waiting_external`. When the ball returns inside, clear it and the SLA restarts.
 - **An agreed deadline goes in `due_at`, not in the title.** The severity SLA is the chase cadence; the deadline is the delivery date. The item is overdue only after it, and no chase is drafted before it; the severity cadence resumes after the deadline passes. Do not change severity to fit a date.
-- **Reassign is an update, never close and recreate.** Changed who owes, who asked, severity, title, deadline: update. The id stays, the views keep their numbering, and history shows before and after. Close-and-recreate generates a new id, breaks the numbering and records a close that never happened.
-- **Email, not handle.** Resolve handles through the chat profile. Never invent. If the agent does not know who someone is, it does not create in the tracker: it notes locally with `waiting:?` and asks.
+- **Reassign is an update, never close and recreate.** Changed who owes, who asked, severity, title, deadline: update. The id stays, every link and mention of it keeps pointing to the same item, and history shows before and after. Close-and-recreate generates a new id, orphans every reference to the old one and records a close that never happened.
+- **Email, not handle.** Resolve handles through the chat profile. Never invent. If the agent does not know who someone is, it does not create in the tracker: it notes the item in the day's note with `waiting:?` and asks.
 - **Project by slug** from the company brain and the compass. No clear project, no project.
 - **Closing requires evidence**: a permalink or a quote of the reply. Disappearing from the radar does not close.
 - **Close and decide say what they close.** Every close carries `expect_title_contains`, every decide carries `expect_question_contains`, with a distinctive term from the item. A wrong id with the guard is an error with nothing written; without it, the wrong item closes silently.
@@ -47,21 +47,21 @@ Only the person sends. The agent records the bump after the person confirms it w
 
 The daily package does not only list; it offers to do. Each offer is recorded as a suggestion with the rule that produced it. The evening close asks for the outcome of each. Over time this gives the one number that says whether the agent is useful: the share of suggestions accepted.
 
-## Views in the Second Brain
+## Citing Items
 
-`tracker/open.md`, one line per open action, pipe-delimited:
+An item is named by its tracker id with leading zeros, `OL-NNNN` for actions and `D-NNNN` for decisions, never by a local numbering. Whenever the agent mentions an item to the person, the id is a link to it followed by its short title ("can I close [OL-0019](…), reduce the transport tasks?"): a bare number means nothing to the person. The tracker stores people by email; a chat handle is only for reading, and the agent never types an email where a handle goes or a handle into the tracker.
 
-```
-OL-0042 | chat:#approvals | waiting:@someone | asked:2026-09-10 | bump:2026-09-15 | sev:2 | PR 331, review of the billing endpoint | [[threads/2026-09-10-pr-331]]
-```
-
-`OL-NNNN` is the tracker id with leading zeros, never a local numbering. `waiting:@someone` is the person's chat handle, for reading; the tracker itself stores their email, and the sync script maps one to the other from the tracker's people list. The agent never types an email into a view or a handle into the tracker. `tracker/decisions.md` is a table with the same id rule (`D-NNNN`). `tracker/closed.md` is append-only, with the evidence that closed each item.
-
-Views change only by regeneration: the agent asks the tracker for a one-time snapshot link, downloads it, and runs the sync script. A check mode compares view and tracker without writing. Divergence is fixed **in the tracker**, never by editing the view. A manually edited view invented fields, dropped items and swapped owners ([pitfalls.md](pitfalls.md)).
+Second brains keep **no copy** of the tracker. Until version 0.31 of the reference implementation each brain held regenerated views (`tracker/open.md`, `decisions.md`, `closed.md`) refreshed by a sync script. They were removed: a view edited by hand invented fields, dropped items and swapped owners ([pitfalls.md](pitfalls.md)), and a view that only a shell can regenerate does not exist in a chat or cloud session. The agent reads the tracker when it needs it, and a wiki page links to an item by its id.
 
 ## Without the Tracker
 
-If the API is unreachable, the agent says so and appends the item to a local pending file (`tracker/pending.md`, same line format, with a temporary id `OL-local-N` and the operation: create, bump, close). It never touches `open.md` or `decisions.md`. The next session with the tracker available replays the pending lines in order, maps each temporary id to the real one, records the map in `closed.md`, empties the pending file and regenerates the views. A replay that hits a duplicate or a changed item stops and asks. Nothing is silently lost and nothing is silently local.
+If the API is unreachable, the agent says so in one line and goes on without guessing:
+
+1. **Read.** There is no local copy. The morning package goes out without the tracker part, said in one line. The "still open" list of the last evening close can serve as a reminder, marked with its date and "not checked against the tracker"; it is never presented as the current state.
+2. **Write.** What the person approves goes to a `## Para o tracker` ("for the tracker"; the skills write in Portuguese) section of the day's note (`wiki/daily/`), one line per operation with the tool and its fields, so it can be replayed without reinterpretation: `- [ ] tracker_create_action {"title": "...", "waiting_on_email": "...", "sev": 2}`. Chasing or closing an existing item uses its real id; a new item gets no number until it is in the tracker, and is cited by title.
+3. **Replay.** The next skill with the tracker available looks for unchecked lines in that section of the last seven daily notes, replays them in order under the same rules (a duplicate goes back to the person, closes and decisions keep their title guard), and turns each line into `- [x] ... → OL-NNNN`, or the error the tracker returned. The replay is noted in the log.
+
+A line still unchecked after a day is a repo-health finding. Nothing is silently lost and nothing is silently local.
 
 ## Adoption
 

@@ -17,7 +17,7 @@ Three roles, and the protocol is mostly about keeping them apart.
 **Per person**
 
 - *Connectors*: the agent reads chat, email, calendar, documents and meeting notes through the person's own accounts, with the person's own permissions. Connectors are configured per person, not in the repo.
-- *Second brain*: one private git repo per person. `raw/` is immutable; `wiki/` is the agent's; `tracker/` holds regenerated views of the shared tracker; the schema file (`CLAUDE.md` or equivalent) is the contract between the person and the agent. Protocol in [second-brain.md](second-brain.md).
+- *Second brain*: one private git repo per person. `raw/` is immutable; `wiki/` is the agent's; there is no copy of the shared tracker, which the agent reads through its tools; the schema file (`CLAUDE.md` or equivalent) is the contract between the person and the agent. Protocol in [second-brain.md](second-brain.md).
 - *Skills*: the rituals, installed as an agent plugin. They read the schema file and the compass before doing anything. [rituals.md](rituals.md).
 
 **Shared**

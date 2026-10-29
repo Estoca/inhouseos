@@ -14,7 +14,7 @@ Each ritual is a skill the agent runs when the person asks. Nothing runs on a sc
 | `/project` | kickoff and updates | Project page in the company brain, project in the tracker, update cadence |
 | `/promote` | when something is the company's | Process, project, decision or owner to the company brain |
 | `/compass` | read or revise | The direction; leadership revises |
-| `/lint` | periodically | Health of the repo and of the views |
+| `/lint` | periodically | Health of the repo: pages without a source, stale loops, operations still waiting for the tracker |
 | `/backup` | end of every skill | Commit and push, or the company's sync |
 
 ## The Morning Package
@@ -29,7 +29,7 @@ The one ritual that decides adoption. It is read in two minutes and acted on in 
 6. **Decide**: decisions the person owns, overdue or due this week.
 7. **Prepare**: meetings the person organizes without a pre-read.
 8. **Waiting on outsiders**: one line each, with any news.
-9. **Repo health**: pages without source, views diverging from the tracker, loops past 30 days.
+9. **Repo health**: pages without source, operations still waiting in `## Para o tracker` ([tracker.md](tracker.md)), loops past 30 days.
 10. **Package**: the adoption line (days opened of expected), the question about a missed day if any.
 
 The package is written to `wiki/daily/` and the log gets one line.
