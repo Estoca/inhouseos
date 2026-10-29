@@ -9,7 +9,7 @@ from typing import Annotated, Any, Callable
 import anyio
 
 from mcp.server.auth.provider import TokenVerifier
-from mcp.server.auth.settings import AuthSettings
+from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions, RevocationOptions
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import ContentBlock, Tool as MCPTool
@@ -23,10 +23,11 @@ from starlette.routing import Route
 from iho import __version__
 from iho.actor import Actor, build_verifier, current_actor
 from iho.brains import Brains, clean_path
-from iho.config import Settings
+from iho.config import AuthMode, Settings
 from iho.errors import IhoError
 from iho.gitstore import GitStore
 from iho.links import LinkStore
+from iho.oauth import CALLBACK_PATH, OAuthProvider
 from iho.tracker.service import Tracker
 
 logger = logging.getLogger("iho.audit")
@@ -87,17 +88,33 @@ class IhoMCP(FastMCP):
         return await anyio.to_thread.run_sync(lambda: _tool(lambda: handler(arguments or {})))
 
 
-def create_application(settings: Settings, *, token_verifier: TokenVerifier | None = None) -> Starlette:
+def create_application(settings: Settings, *, token_verifier: TokenVerifier | None = None,
+                       oauth_provider: OAuthProvider | None = None) -> Starlette:
     prepare_data_dir(settings)
     public_url = AnyHttpUrl(settings.normalized_public_url)
     brains = Brains(settings, GitStore(settings.repos_dir), LinkStore(settings.db_path))
     tracker = Tracker(settings.db_path)
 
+    # standalone: this server is the OAuth server (the SDK serves its routes); dev: one fixed token
+    provider = None
+    verifier = None
+    if settings.auth_mode is AuthMode.STANDALONE:
+        provider = oauth_provider or OAuthProvider(settings, settings.db_path)
+    else:
+        verifier = token_verifier or build_verifier(settings)
+
     mcp = IhoMCP(
         name="InHouseOS",
         instructions=INSTRUCTIONS,
-        token_verifier=token_verifier or build_verifier(settings),
-        auth=AuthSettings(issuer_url=public_url, resource_server_url=public_url, required_scopes=[]),
+        token_verifier=verifier,
+        auth_server_provider=provider,
+        auth=AuthSettings(
+            issuer_url=public_url,
+            resource_server_url=AnyHttpUrl(f"{settings.normalized_public_url}/mcp"),
+            required_scopes=[],
+            client_registration_options=ClientRegistrationOptions(enabled=True) if provider else None,
+            revocation_options=RevocationOptions(enabled=True) if provider else None,
+        ),
         host=settings.host,
         port=settings.port,
         log_level=settings.log_level,
@@ -282,6 +299,8 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
         Route("/cli/upload/{token}", upload, methods=["POST"]),
         Route("/cli/download/{token}", download, methods=["GET"]),
     ]
+    if provider is not None:
+        app.routes.insert(0, Route(CALLBACK_PATH, provider.callback, methods=["GET"]))
     return app
 
 

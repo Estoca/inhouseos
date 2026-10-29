@@ -31,6 +31,19 @@ class Settings(BaseSettings):
     dev_token: str = ""
     dev_user: str = ""
 
+    # standalone login: the server is the OAuth server agents connect to; people sign in upstream
+    oidc_provider: str = "google"  # google | oidc (any OpenID provider with discovery, e.g. a Microsoft tenant)
+    oidc_issuer: str = "https://accounts.google.com"
+    oidc_client_id: str = ""
+    oidc_client_secret: str = ""
+    allowed_domains: str = ""  # comma list: who signs in with a verified company e-mail
+    allowed_emails: str = ""  # comma list: invited people from outside those domains
+    # DCR is open (claude.ai needs it); only these hosts may receive codes, so a random site cannot
+    # register itself and collect logins
+    oauth_redirect_hosts: str = "claude.ai,claude.com,localhost,127.0.0.1"
+    access_token_seconds: int = 3600
+    refresh_token_days: int = 30
+
     # brains: limits ported from estoca-brain-sync 0.4.0
     link_ttl_seconds: int = 300
     max_files_per_upload: int = 200
@@ -58,9 +71,28 @@ class Settings(BaseSettings):
                 raise ValueError("IHO_DEV_TOKEN must have at least 24 characters.")
             if "@" not in self.dev_user:
                 raise ValueError("IHO_DEV_USER must be an email address.")
+        elif self.auth_mode is AuthMode.STANDALONE:
+            if not self.oidc_client_id or not self.oidc_client_secret:
+                raise ValueError("auth_mode=standalone needs IHO_OIDC_CLIENT_ID and IHO_OIDC_CLIENT_SECRET.")
+            if not self.allowed_domain_set and not self.allowed_email_set:
+                raise ValueError("auth_mode=standalone needs IHO_ALLOWED_DOMAINS or IHO_ALLOWED_EMAILS.")
+            if self.oidc_provider not in ("google", "oidc"):
+                raise ValueError("IHO_OIDC_PROVIDER must be google or oidc.")
         else:
-            raise ValueError(f"auth_mode={self.auth_mode} is not implemented yet; use dev.")
+            raise ValueError(f"auth_mode={self.auth_mode} is not implemented yet; use dev or standalone.")
         return self
+
+    @property
+    def allowed_domain_set(self) -> set[str]:
+        return {d.strip().lower() for d in self.allowed_domains.split(",") if d.strip()}
+
+    @property
+    def allowed_email_set(self) -> set[str]:
+        return {e.strip().lower() for e in self.allowed_emails.split(",") if e.strip()}
+
+    @property
+    def oauth_redirect_host_set(self) -> set[str]:
+        return {h.strip().lower() for h in self.oauth_redirect_hosts.split(",") if h.strip()}
 
     @property
     def normalized_public_url(self) -> str:
