@@ -44,7 +44,9 @@ CREATE TABLE IF NOT EXISTS approvals (
 
 
 def ui_meta(*, app_only: bool = False) -> dict[str, Any]:
-    return {"ui": {"resourceUri": APP_URI, "visibility": ["app"] if app_only else ["model", "app"]}}
+    # the flat "ui/resourceUri" is the legacy key; the ext-apps SDK still writes both and hosts read it
+    return {"ui": {"resourceUri": APP_URI, "visibility": ["app"] if app_only else ["model", "app"]},
+            "ui/resourceUri": APP_URI}
 
 
 def app_html() -> str:
