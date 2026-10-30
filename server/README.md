@@ -2,7 +2,7 @@
 
 The InHouseOS server: tracker, brains, compass, skills and the MCP endpoint in one process, with everything it keeps in one volume (`/data`). One instance per company.
 
-Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker, standalone login, snapshots (LAB-50 to LAB-54) and skills served over MCP (LAB-56). Agent install (LAB-55) comes next.
+Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker, standalone login, snapshots (LAB-50 to LAB-54) skills served over MCP (LAB-56) and a first screen in the chat (MCP Apps). Agent install (LAB-55) comes next.
 
 ## Brains
 
