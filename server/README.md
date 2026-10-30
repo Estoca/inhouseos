@@ -2,7 +2,7 @@
 
 The InHouseOS server: tracker, brains, compass, skills and the MCP endpoint in one process, with everything it keeps in one volume (`/data`). One instance per company.
 
-Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker, standalone login, snapshots (LAB-50 to LAB-54) and skills served over MCP (LAB-56). Agent install (LAB-55) comes next.
+Status: `/health`, `/mcp` with `iho_whoami`, the second-brain tools, the tracker, standalone login, snapshots (LAB-50 to LAB-54) skills served over MCP (LAB-56) and a first screen in the chat (MCP Apps). Agent install (LAB-55) comes next.
 
 ## Brains
 
@@ -31,6 +31,19 @@ The rituals are served by the server itself, so the agent needs no plugin: `os_l
 | `sweep` | `varredura` | all sources since the last sweep, classified, with proposed actions and pages |
 
 They are package data under `src/iho/skills/`: `<name>/SKILL.md` with a small frontmatter (`name`, `description`, `when`, `aliases`, `docs`), and shared support docs at the root (`tracker.md`, `compass.md`, `brain.md`, `armadilhas.md`). They read the brain with the `brain_*` tools, the tracker with `tracker_*`, and chat, email and calendar through each person's own connectors. Company values are `{{placeholders}}` filled from `IHO_COMPANY_*`, never written in the text. The skills are in Portuguese for now.
+
+## Screens in the chat (MCP Apps)
+
+Hosts that support MCP Apps (`io.modelcontextprotocol/ui`, spec 2026-01-26) render a screen inside the conversation. The server serves one page, `ui://iho/app.html` (`text/html;profile=mcp-app`, in `src/iho/ui/`), and the tools that use it point to it in `_meta.ui.resourceUri`. Hosts without MCP Apps get the same tools with a text answer.
+
+| Tool | Visible to | Does |
+|---|---|---|
+| `os_show_queue` | model and screen | the person's queue (what waits on them, what they wait for); the screen refreshes itself every 30 s and can ask Claude to draft a chase |
+| `os_request_approval` | model and screen | asks the person to approve a write before the agent does it; the screen shows Approve and Reject |
+| `os_decide_approval` | screen only | answers the request |
+| `os_approval_status` | model | pending, approved or rejected |
+
+An approval can only be answered on its screen: `os_decide_approval` has `visibility: ["app"]`, so the host keeps it out of the model's tools, and it also needs a nonce that travels only in the result's `_meta`, never in the text or the structured content the model reads. A host that ignored visibility still could not let the model approve its own request. Approvals live in `/data/iho.db`, one person each.
 
 ## Try it
 

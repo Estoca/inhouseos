@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InHouseOS</title>
+<style>
+  :root { --bg: #ffffff; --fg: #1f1e1d; --muted: #6b6a66; --line: #e4e2dc; --card: #f7f6f2;
+          --accent: #2f6fd1; --ok: #2b7a3d; --bad: #b3261e; --warn: #9a5b00; color-scheme: light; }
+  :root[data-theme="dark"] { --bg: #262624; --fg: #f1efe8; --muted: #a8a6a0; --line: #3a3936; --card: #2f2e2b;
+          --accent: #7aa7ee; --ok: #7cc48b; --bad: #f08a83; --warn: #e3b25c; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 12px 14px; background: var(--bg); color: var(--fg);
+         font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+  h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; text-transform: none; }
+  .item { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+  .title { font-weight: 500; }
+  .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .late { color: var(--bad); }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+           border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+  button.primary { background: var(--ok); border-color: var(--ok); color: #fff; }
+  button.danger { color: var(--bad); }
+  button:disabled { opacity: .5; cursor: default; }
+  .status { font-weight: 600; }
+  .approved { color: var(--ok); } .rejected { color: var(--bad); } .pending { color: var(--warn); }
+  .foot { color: var(--muted); font-size: 11px; margin-top: 12px; display: flex; gap: 10px; align-items: center; }
+  .err { color: var(--bad); font-size: 12px; margin-top: 6px; }
+  .empty { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="root"><p class="empty">Carregando…</p></div>
+<script>
+const NONCE_KEY = "iho/approval_nonce";
+const REFRESH_MS = 30000;
+let nextId = 1, hostInfo = null, state = { view: null, data: null, nonce: null, error: null };
+const pending = new Map();
+
+function send(msg) { window.parent.postMessage({ jsonrpc: "2.0", ...msg }, "*"); }
+function request(method, params) {
+  const id = nextId++;
+  send({ id, method, params });
+  return new Promise((resolve, reject) => pending.set(id, { resolve, reject }));
+}
+function notify(method, params) { send({ method, params }); }
+
+window.addEventListener("message", (ev) => {
+  const m = ev.data;
+  if (!m || m.jsonrpc !== "2.0") return;
+  if (m.id !== undefined && pending.has(m.id) && (m.result !== undefined || m.error !== undefined)) {
+    const p = pending.get(m.id); pending.delete(m.id);
+    m.error ? p.reject(new Error(m.error.message || "erro do host")) : p.resolve(m.result);
+    return;
+  }
+  if (m.method === "ui/notifications/tool-result") { onResult(m.params); return; }
+  if (m.method === "ui/notifications/host-context-changed") { applyContext(m.params); return; }
+  if (m.id !== undefined && m.method) send({ id: m.id, result: {} });  // teardown, ping: acknowledge
+});
+
+function applyContext(ctx) {
+  if (!ctx) return;
+  if (ctx.theme) document.documentElement.dataset.theme = ctx.theme;
+}
+
+function payload(result) {
+  if (!result) return null;
+  if (result.structuredContent) return result.structuredContent;
+  try { return JSON.parse(result.content[0].text); } catch { return null; }
+}
+
+function onResult(result) {
+  const data = payload(result);
+  if (!data) { state.error = "A ferramenta não devolveu dados para a tela."; render(); return; }
+  state.view = data.view; state.data = data; state.error = result.isError ? "A ferramenta falhou." : null;
+  if (data.view === "approval") state.nonce = (result._meta || {})[NONCE_KEY] || null;
+  render();
+}
+
+async function callTool(name, args) {
+  const result = await request("tools/call", { name, arguments: args });
+  if (result.isError) throw new Error((result.content && result.content[0] && result.content[0].text) || "erro");
+  return result;
+}
+
+async function refreshQueue() {
+  try { onResult(await callTool("os_show_queue", {})); }
+  catch (e) { state.error = "Não consegui atualizar: " + e.message; render(); }
+}
+
+async function decide(decision) {
+  const a = state.data.approval;
+  for (const b of document.querySelectorAll("button")) b.disabled = true;
+  try {
+    onResult(await callTool("os_decide_approval", { approval_id: a.id, decision, nonce: state.nonce }));
+    const word = decision === "approved" ? "aprovei" : "recusei";
+    request("ui/message", { role: "user", content: { type: "text",
+      text: `Pela tela, ${word} o pedido de aprovação #${a.id} (${a.summary}). Confira com os_approval_status e siga.` } })
+      .catch(() => {});
+  } catch (e) { state.error = e.message; render(); }
+}
+
+function askClaude(text) {
+  request("ui/message", { role: "user", content: { type: "text", text } })
+    .catch((e) => { state.error = "O host não aceitou a mensagem: " + e.message; render(); });
+}
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const hhmm = (iso) => { try { return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
+
+function item(a, chase) {
+  const late = a.overdue_by > 0 ? ` · <span class="late">${a.overdue_by}d atrasada</span>` : "";
+  const who = chase ? ` · espera ${esc(a.waiting_on)}` : (a.requester !== a.waiting_on ? ` · pedido de ${esc(a.requester)}` : "");
+  const button = chase ? `<div class="row"><button data-chase="${a.id}">Pedir ao Claude a cobrança</button></div>` : "";
+  return `<div class="item"><div class="title">#${a.id} ${esc(a.title)}</div>
+    <div class="meta">sev ${a.sev} · ${a.age_days}d${late}${who}</div>${button}</div>`;
+}
+
+function render() {
+  const root = document.getElementById("root");
+  const d = state.data;
+  let html = "";
+  if (state.view === "queue") {
+    html += `<h2>Sua fila</h2>`;
+    html += `<h3>Com você (${d.on_you.length})</h3>` + (d.on_you.map((a) => item(a, false)).join("") || `<p class="empty">Nada esperando por você.</p>`);
+    html += `<h3>Você espera (${d.you_wait.length})</h3>` + (d.you_wait.map((a) => item(a, true)).join("") || `<p class="empty">Você não espera ninguém.</p>`);
+    html += `<div class="foot"><span>Atualizado às ${hhmm(d.generated_at)} · a cada 30 s</span><button id="refresh">Atualizar</button></div>`;
+  } else if (state.view === "approval") {
+    const a = d.approval;
+    html += `<h2>Pedido de aprovação #${a.id}</h2><div class="item"><div class="title">${esc(a.summary)}</div>`;
+    if (a.details) html += `<div class="meta" style="white-space:pre-wrap">${esc(a.details)}</div>`;
+    html += `<div class="meta">Status: <span class="status ${esc(a.status)}">${{ pending: "aguardando você", approved: "aprovado", rejected: "recusado" }[a.status] || esc(a.status)}</span>`;
+    if (a.decided_at) html += ` · ${hhmm(a.decided_at)} por ${esc(a.decided_by)}`;
+    html += `</div></div>`;
+    if (a.status === "pending") {
+      html += state.nonce
+        ? `<div class="row"><button class="primary" id="approve">Aprovar</button><button class="danger" id="reject">Recusar</button></div>`
+        : `<p class="err">Esta tela não recebeu a chave do pedido: a aprovação só vale pela tela que nasceu com ele.</p>`;
+    }
+  } else {
+    html += `<p class="empty">Nada para mostrar.</p>`;
+  }
+  if (state.error) html += `<p class="err">${esc(state.error)}</p>`;
+  if (hostInfo) html += `<div class="foot">InHouseOS · ${esc(hostInfo.name || "host")} ${esc(hostInfo.version || "")}</div>`;
+  root.innerHTML = html;
+  const r = document.getElementById("refresh"); if (r) r.onclick = refreshQueue;
+  const ap = document.getElementById("approve"); if (ap) ap.onclick = () => decide("approved");
+  const rj = document.getElementById("reject"); if (rj) rj.onclick = () => decide("rejected");
+  for (const b of document.querySelectorAll("[data-chase]")) {
+    const a = d.you_wait.find((x) => String(x.id) === b.dataset.chase);
+    b.onclick = () => askClaude(`Redija a cobrança da pendência #${a.id} "${a.title}" para ${a.waiting_on}, no tom do canal de origem. Não envie: só me mostre.`);
+  }
+}
+
+new ResizeObserver(() => {
+  // the content's own height: the frame's scrollHeight would echo whatever size the host gave it
+  const root = document.getElementById("root").getBoundingClientRect();
+  notify("ui/notifications/size-changed", { width: Math.ceil(document.body.scrollWidth), height: Math.ceil(root.bottom + 12) });
+}).observe(document.getElementById("root"));
+
+(async () => {
+  if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.theme = "dark";
+  try {
+    const init = await request("ui/initialize", {
+      protocolVersion: "2026-01-26",
+      appCapabilities: { availableDisplayModes: ["inline"] },
+      clientInfo: { name: "iho-app", version: "0.1.0" },
+    });
+    hostInfo = init.hostInfo || null;
+    applyContext(init.hostContext);
+    notify("ui/notifications/initialized", {});
+  } catch (e) { state.error = "O host não respondeu ao ui/initialize: " + e.message; render(); }
+  setInterval(() => { if (state.view === "queue") refreshQueue(); }, REFRESH_MS);
+})();
+</script>
+</body>
+</html>

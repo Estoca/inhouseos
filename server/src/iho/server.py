@@ -12,7 +12,7 @@ from mcp.server.auth.provider import TokenVerifier
 from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions, RevocationOptions
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
-from mcp.types import ContentBlock, Tool as MCPTool, ToolAnnotations
+from mcp.types import CallToolResult, ContentBlock, TextContent, Tool as MCPTool, ToolAnnotations
 from pydantic import AnyHttpUrl, Field
 from starlette.applications import Starlette
 from starlette.datastructures import UploadFile
@@ -22,6 +22,7 @@ from starlette.routing import Route
 
 from iho import __version__
 from iho.actor import Actor, build_verifier, current_actor
+from iho.apps import APP_MIME, APP_URI, NONCE_KEY, ApprovalStore, app_html, queue_text, queue_view, ui_meta
 from iho.backup import BackupScheduler
 from iho.brains import Brains, clean_path
 from iho.config import AuthMode, Settings
@@ -105,6 +106,7 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
     brains = Brains(settings, GitStore(settings.repos_dir), LinkStore(settings.db_path))
     tracker = Tracker(settings.db_path)
     skills = SkillBook(settings)
+    approvals = ApprovalStore(settings.db_path)
     backups = BackupScheduler(settings)
     backups.start()
 
@@ -161,6 +163,59 @@ def create_application(settings: Settings, *, token_verifier: TokenVerifier | No
         """The step by step of a skill and the support docs it references. Call it before running a ritual
         (bom dia, abrir pacote, fechar pacote, sweep...) and follow the text; read the docs it returns."""
         return _tool(lambda: skills.get(name))
+
+    # ------------------------------------------------------------ screens in the chat (MCP Apps)
+    @mcp.resource(APP_URI, name="iho-app", title="InHouseOS", mime_type=APP_MIME,
+                  meta={"ui": {"prefersBorder": True}})
+    def iho_app() -> str:
+        return app_html()
+
+    def _screen(text: str, data: dict[str, Any], meta: dict[str, Any] | None = None) -> CallToolResult:
+        return CallToolResult(content=[TextContent(type="text", text=text)], structuredContent=data, _meta=meta)
+
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True), meta=ui_meta())
+    async def os_show_queue() -> CallToolResult:
+        """Show the person's queue (what waits on them, what they wait for) as a screen in the chat that
+        refreshes itself. Use it when the person asks to see the queue or the pending items."""
+        actor = current_actor()
+        view = await anyio.to_thread.run_sync(lambda: _tool(lambda: queue_view(tracker.run, actor)))
+        return _screen(queue_text(view), view)
+
+    @mcp.tool(meta=ui_meta())
+    async def os_request_approval(
+        summary: Annotated[str, Field(min_length=3, max_length=200, description="What will be done, in one line.")],
+        details: Annotated[str | None, Field(max_length=4000, description="What exactly, for the person to judge.")] = None,
+    ) -> CallToolResult:
+        """Ask the person to approve a write before doing it (open a PR, send a message, change a record).
+        Shows a screen with Approve and Reject; only the person can answer, on that screen. Then wait and
+        check with os_approval_status; act only when it says approved."""
+        actor = current_actor()
+        approval, nonce = await anyio.to_thread.run_sync(
+            lambda: _tool(lambda: approvals.request(actor.email, summary, details)))
+        text = (f"Approval #{approval.id} requested: {approval.summary}. Waiting for the person to answer on the "
+                f"screen; check with os_approval_status before acting.")
+        return _screen(text, {"view": "approval", "approval": approval.public()}, {NONCE_KEY: nonce})
+
+    @mcp.tool(meta=ui_meta(app_only=True))
+    async def os_decide_approval(
+        approval_id: Annotated[int, Field(ge=1)],
+        decision: Annotated[str, Field(description="approved or rejected")],
+        nonce: Annotated[str, Field(min_length=1)],
+        note: str | None = None,
+    ) -> CallToolResult:
+        """Answer an approval request. Called by the approval screen only."""
+        actor = current_actor()
+        approval = await anyio.to_thread.run_sync(
+            lambda: _tool(lambda: approvals.decide(actor.email, approval_id, nonce, decision, note)))
+        logger.info("cli=approval actor=%s id=%d decision=%s", actor.email, approval.id, approval.status)
+        return _screen(f"Approval #{approval.id}: {approval.status}.", {"view": "approval", "approval": approval.public()})
+
+    @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
+    async def os_approval_status(approval_id: Annotated[int, Field(ge=1)]) -> dict:
+        """Whether the person approved, rejected or has not answered an approval request yet."""
+        actor = current_actor()
+        approval = await anyio.to_thread.run_sync(lambda: _tool(lambda: approvals.get(actor.email, approval_id)))
+        return approval.public()
 
     # ------------------------------------------------------------ second brain
     @mcp.tool()
